@@ -1,68 +1,25 @@
-# WedPlan — Server (Express + MongoDB)
+## Project Description
 
-REST API for the WedPlan wedding planning platform.
+Express REST API for WedPlan: services, bookings, admin tools, JWT verification and Stripe payments.
 
+## Important Features
 
-## Live Links
+JWT verification with role middleware, ownership checks, free-plan limit, duplicate booking prevention, Stripe checkout and webhook-only Premium activation.
 
-- Live site: https://wedplan-client-delta.vercel.app
-- Client repo: https://github.com/Minhaz-ify/wedplan-client
-- Server repo: https://github.com/Minhaz-ify/wedplan-server
+## Technology Stack
 
+Express 5, MongoDB, jose, Stripe.
 
+## Installation and Run Locally
 
-## Stack
-
-Express 5, MongoDB (native driver), `jose` (verifies Better Auth JWTs via JWKS), Stripe (subscriptions + webhook).
-
-## Setup
-
-```bash
+git clone https://github.com/Minhaz-ify/wedplan-server.git
+cd wedplan-server
 npm install
-cp .env.example .env   # fill in values
+cp .env.example .env
 npm run dev
-```
 
-## Auth model
+## Repository Links
 
-Better Auth runs in the **client** (Next.js). The client requests a short-lived JWT; this server verifies its
-signature against `BETTER_AUTH_URL/api/auth/jwks`, then loads the user from MongoDB so `role` and `isBlocked`
-are always read from the database (never trusted from the token or request body).
-
-## Main endpoints
-
-| Method              | Route                                              | Access                                                                  |
-| ------------------- | -------------------------------------------------- | ----------------------------------------------------------------------- |
-| GET                 | /api/services (q, category, location, sort, page)  | public (approved + active only)                                         |
-| GET                 | /api/services/:id                                  | any logged-in user                                                      |
-| GET/POST/PUT/DELETE | /api/vendor/services                               | vendor (owner only, free plan max 3 active)                             |
-| POST                | /api/bookings                                      | customer (not own service, no duplicate active date)                    |
-| GET                 | /api/bookings/mine, PATCH /api/bookings/:id/cancel | customer (pending only)                                                 |
-| GET, PATCH          | /api/vendor/bookings(/:id)                         | vendor (accept/reject)                                                  |
-| GET                 | /api/admin/users, PATCH /api/admin/users/:id/block | admin                                                                   |
-| GET, PATCH, DELETE  | /api/admin/services                                | admin (approve / reject / delete)                                       |
-| GET                 | /api/admin/transactions                            | admin (read-only)                                                       |
-| POST                | /api/payments/checkout, POST /api/payments/cancel  | vendor                                                                  |
-| POST                | /api/webhooks/stripe                               | Stripe only (signature verified) — the ONLY place Premium is activated |
-| GET/PATCH           | /api/me, GET /api/stats                            | any logged-in user                                                      |
-
-## Admin account
-
-1. Sign up normally on the website with the admin email.
-2. `node scripts/make-admin.js admin@gmail.com`
-
-Optional demo data: `node scripts/seed.js vendor@gmail.com` (adds 8 approved services to an existing vendor).
-
-## Stripe webhook (local)
-
-```bash
-stripe listen --forward-to localhost:5000/api/webhooks/stripe
-```
-
-Copy the printed `whsec_...` into `STRIPE_WEBHOOK_SECRET`. Test card: `4242 4242 4242 4242`.
-For production, add `https://<server-domain>/api/webhooks/stripe` in the Stripe dashboard with events:
-`checkout.session.completed`, `checkout.session.expired`, `invoice.paid`, `customer.subscription.deleted`.
-
-## Deploy (Vercel)
-
-`vercel.json` + `api/index.js` are included. Set all env vars; set `CLIENT_URL` and `BETTER_AUTH_URL` to the live client URL.
+- Server repo: https://github.com/Minhaz-ify/wedplan-server
+- Client repo: https://github.com/Minhaz-ify/wedplan-client
+- Live site: https://wedplan-client-delta.vercel.app
